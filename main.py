@@ -76,12 +76,16 @@ class Riwords:
                     self.next_url_list.remove(nurl)
                     break
 
-        for i, nurl in enumerate(self.next_url_list):
+        for i, nurl in enumerate(self.next_url_list): # search last occurence of token
             splitted_url = re.split("/", repr(nurl))
             token = re.sub("'", "", splitted_url[len(splitted_url)-1])
-            nurl2 = re.sub("(\\b" + token + "\\b)(?!.*\\1)", "", nurl)
-            self.next_url_list[i] = re.sub("/$", "", nurl2)
 
+            for j, v in enumerate(splitted_url): # remove '
+                splitted_url[j] = re.sub("'", "", v)
+
+                if Counter(splitted_url)[token] > 1: # if at least 2 occurnces
+                    nurl2 = re.sub("(\\b" + token + "\\b)(?!.*\\1)$", "", nurl) # delete the last occurence if its position is at the end
+                    self.next_url_list[i] = re.sub("/$", "", nurl2) # update next url list
 
 
     def read(self):
