@@ -15,7 +15,8 @@ class Riwords:
         self.parse_internal_url()
 
     def ignore_html(self, w):
-        w = re.sub("^([0-9]+).([0-9]+)(%)?", "",
+        w = re.sub("«\xa0", "",
+                   re.sub("^([0-9]+).([0-9]+)(%)?", "",
                    re.sub(",", "",
                           re.sub("(.)*?[;]", "",
                                  re.sub("'\u202f'", "",
@@ -43,7 +44,7 @@ class Riwords:
                                                                                                                     "(<!?-?-?.+-?-?>)",
                                                                                                                     "",
                                                                                                                     w)
-                                                                                                            ))))))))))))))))
+                                                                                                            )))))))))))))))))
 
         if "http" not in w:
             return w
@@ -55,25 +56,18 @@ class Riwords:
         return self.webpage.most_common(70)
 
     def filter_url_list(self):
-        ignore_words = ["wikimedia", ""]
+        ignore_words = ["wikimedia", "Privacy_policy"]
 
-        # print(' '.join("%s" % ''.join(map(str, x)) for x in ignore_words))
         for url in self.url_list:
             for mcw in self.get_most_common_words():
-                splitted_url = re.split("[.-_]", repr(url))
-
-                #print("trying: " + url)
+                splitted_url = re.split("[.-]", repr(url))
                 if repr(mcw[0]).strip().lower() in repr(splitted_url).strip().lower():
                     self.next_url_list.append(url)  # add url
-                    #self.url_list.remove(url)
-                    print("added: " + url)
+                    self.url_list.remove(url)
                     break
 
         for nurl in self.next_url_list:
-            print("---")
-            print(nurl)
             for iw in ignore_words:
-                print(iw)
                 if iw in nurl:
                     self.next_url_list.remove(nurl)
         print("done comparaison")
@@ -99,7 +93,7 @@ class Riwords:
 
 if __name__ == '__main__':
     riwords = Riwords(
-        "https://fr.m.wikipedia.org/wiki/%C3%89cole_sup%C3%A9rieure_d'informatique_%C3%A9lectronique_automatique")
+        "https://stackoverflow.com/questions/39744543/regex-for-detecting-repeating-symbols")
     print(len(riwords.webpage))
     print(riwords.webpage)
     print(len(riwords.next_url_list))
