@@ -73,14 +73,21 @@ class Riwords:
         for iw in ignore_words:
             for nurl in self.next_url_list:
                 if iw in nurl:
-                    print(iw + " == " + nurl)
                     self.next_url_list.remove(nurl)
                     break
 
+        for i, nurl in enumerate(self.next_url_list):
+            splitted_url = re.split("/", repr(nurl))
+            token = re.sub("'", "", splitted_url[len(splitted_url)-1])
+            nurl2 = re.sub("(\\b" + token + "\\b)(?!.*\\1)", "", nurl)
+            self.next_url_list[i] = re.sub("/$", "", nurl2)
+
+
+
     def read(self):
-        with urllib.request.urlopen(self.url) as url:
-            return Counter(
-                self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in url for w in l.split())
+        req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
+        with urllib.request.urlopen(req) as url:
+            return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in url for w in l.split())
 
     def write(self):
         with open("test.txt", "a", encoding="utf-8") as f:
@@ -88,7 +95,7 @@ class Riwords:
                 if 3 < len(w[0]) <= 12:
                     # 3: pour retirer les petits mots utilisés qui ont une très grande frequence d'utilisation
                     # 12: longueur du mot maximum qui ont une frequence > 0.01 en langue francaise
-                    f.write(w[0].strip().lower())
+                    f.write(w[0].strip())
                     f.write("\n")
 
     def parse_internal_url(self, nb_internal_url):
@@ -99,7 +106,7 @@ class Riwords:
 
 if __name__ == '__main__':
     riwords = Riwords(
-        "https://fr.wikipedia.org/wiki/League_of_Legends:_Wild_Rift")
+        "https://fr.wikipedia.org/wiki/Commissariat_%C3%A0_l%27%C3%A9nergie_atomique_et_aux_%C3%A9nergies_alternatives")
     riwords.parse_internal_url(1)
     riwords.write()
     # print(len(riwords.dict))
