@@ -1,3 +1,4 @@
+import time
 import urllib.request
 import urllib.parse
 import re
@@ -11,14 +12,13 @@ class Riwords:
         self.url_list = []
         self.next_url_list = []
         self.dict_counter = self.read()  # external dict
-        self.blacklist = ["wikimedia", "Privacy_policy", "favicon", "js", "css", "min", "php", "wp",
+        self.blacklist = ["wikimedia", "Privacy_policy", "favicon", "JS", "js", "CSS", "css", "min", "PHP", "php", "wp", "JPG", "jpg"
                           "wp-includes", "paie", "https://de", "https://eu", "https://it", "https://nl", "https://pt",
                           "https://sv", "https://pl", "https://tr", "https://mx", "https://it", "https://us", "https://cn",
                           "https://br", "https://au", "https://ftr", "https://ko", "https://ru", "https://en", "https://uk",
                           "https://zh", "https://bg", "https://ec", "mediawiki.org", "visiatome", "britannica"]
 
-        # self.write()
-        # self.parse_internal_url()
+        self.filter_url_list()
 
     def ignore_html(self, w):
         w = re.sub("^(https:/)$", "",
@@ -40,7 +40,8 @@ class Riwords:
                                                                                                                   re.sub("(\"«&#160;)", "",
                                                                                                                       re.sub("(((>)?<.*)?(>)?(/>)?(\[)?(])?(\()?(\))?)(\|)?((.)*:)?(·)?({)?(\\)(})?)?", "",
                                                                                                                           re.sub("^(?!href=\")((.)*\")", "",
-                                                                                                                              re.sub("(<!?-?-?.+-?-?>)", "", w))))))))))))))))))))
+                                                                                                                              re.sub("(<!?-?-?.+-?-?>)", "",
+                                                                                                                                     re.sub("class=\"(.)*\"", "", w)))))))))))))))))))))
 
         if "http" not in w:
             return w
@@ -49,7 +50,7 @@ class Riwords:
             return ""
 
     def get_most_common_words(self):
-        return [w for w in self.dict_counter.most_common()[7::] if 2 < len(w[0]) <= 12]
+        return [w for w in self.dict_counter.most_common()[7::] if 3 < len(w[0]) <= 12]
 
     def filter_url_list(self):
         for url in self.url_list:
@@ -64,12 +65,9 @@ class Riwords:
                     break
 
         for iw in self.blacklist:
-            print(iw)
             for nurl in self.next_url_list:
-                print(nurl)
                 if iw in nurl:
                     self.next_url_list.remove(nurl)
-                    print("REMOVED" + nurl)
 
         for i, nurl in enumerate(self.next_url_list): # search last occurence of token
             splitted_url = re.split("/", repr(nurl))
@@ -84,11 +82,14 @@ class Riwords:
 
     def read(self):
         req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
-        with urllib.request.urlopen(req) as url:
-            return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in url for w in l.split())
+        try:
+            with urllib.request.urlopen(req, timeout=10) as url:
+                return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in url for w in l.split())
+        except:
+            print("Error: timout")
 
     def write(self):
-        with open("test.txt", "a", encoding="utf-8") as f:
+        with open("test.txt", "w", encoding="utf-8") as f:
             for w in self.dict_counter.most_common():
                 if 3 < len(w[0]) <= 12:
                     # 2: pour retirer les petits mots utilisés qui ont une très grande frequence d'utilisation
@@ -96,20 +97,37 @@ class Riwords:
                     f.write(w[0].strip())
                     f.write("\n")
 
-    def parse_internal_url(self, nb_internal_url):
-        self.filter_url_list()
-        print(self.url_list)
-        print(self.next_url_list)
-        #for i in range(nb_internal_url):
-        #    self.dict_counter += Counter(self.next_url_list[i] if re.match("(^https:\/\/)([a-zA-Z0-9.\/_%\'-])*", self.next_url_list[i]) else None)
+    def parse_internal_url(self, horizontal=None, deep=1):
+        if horizontal is None:
+            horizontal = len(self.next_url_list)
+        print(f"\n--- Looking for [{horizontal} internal url] for Deep value = [{deep}] ---")
+        print(f"Search list ({len(self.next_url_list)} url): [" + ", ".join(self.next_url_list) + "]\n")
+        cpt = horizontal
+        i = 0
+
+        total_time = time.time()
+        while total_time and deep and i < len(self.next_url_list) <= cpt:
+            total_time = 0 if time.time() - total_time > 5000.0 else total_time + (time.time() - total_time)
+            print(time.time() - total_time)
+            if re.match("(^https://)([a-zA-Z0-9./_%\'-])*", self.next_url_list[i]):
+                try:
+                    print(f"Searching [{i}][{deep}]: " + self.next_url_list[i])
+                    r = Riwords(self.next_url_list[i])
+                    r.parse_internal_url(len(r.next_url_list), deep-1)
+                    print(f"Add words to dict [{i}][{deep}]: " + ", ".join(r.dict_counter))
+                    self.dict_counter += r.dict_counter
+                    print(f"interesting url found [{i}][{deep}]: [" + ", ".join(r.next_url_list) + "]\n")
+                    i += 1
+                except:
+                    print(f"Error [{i}][{deep}]: Can't access url\n")
+                    cpt += 1
+                    i += 1
+            else:
+                i += 1
 
 
 if __name__ == '__main__':
     riwords = Riwords(
-        "https://fr.wikipedia.org/wiki/Commissariat_%C3%A0_l'%C3%A9nergie_atomique_et_aux_%C3%A9nergies_alternatives")
-    riwords.parse_internal_url(1)
+        "https://fr.wikipedia.org/wiki/Commissariat_%C3%A0_l%27%C3%A9nergie_atomique_et_aux_%C3%A9nergies_alternatives")
+    riwords.parse_internal_url(deep=1)  # horizontal=default | deep=2
     riwords.write()
-    # print(len(riwords.dict))
-    #print(riwords.dict_counter)
-    # print(len(riwords.next_url_list))
-    #print(riwords.next_url_list)
