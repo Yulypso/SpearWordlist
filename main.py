@@ -10,7 +10,8 @@ class Riwords:
         self.url = url
         self.url_list = []
         self.next_url_list = []
-        self.webpage = self.read()
+        self.dict = self.read() # external dict
+
         self.write()
         self.parse_internal_url()
 
@@ -53,7 +54,7 @@ class Riwords:
             return ""
 
     def get_most_common_words(self):
-        return self.webpage.most_common(70)
+        return self.dict.most_common(70)
 
     def filter_url_list(self):
         ignore_words = ["wikimedia", "Privacy_policy"]
@@ -70,7 +71,6 @@ class Riwords:
             for iw in ignore_words:
                 if iw in nurl:
                     self.next_url_list.remove(nurl)
-        print("done comparaison")
 
     def parse_internal_url(self):
         self.filter_url_list()
@@ -83,7 +83,7 @@ class Riwords:
 
     def write(self):
         with open("test.txt", "a", encoding="utf-8") as f:
-            for w in self.webpage.most_common():
+            for w in self.dict.most_common():
                 if 3 < len(w[0]) <= 12:
                     # 3: pour retirer les petits mots utilisés qui ont une très grande frequence d'utilisation
                     # 12: longueur du mot maximum qui ont une frequence > 0.01 en langue francaise
@@ -94,7 +94,7 @@ class Riwords:
 if __name__ == '__main__':
     riwords = Riwords(
         "https://stackoverflow.com/questions/39744543/regex-for-detecting-repeating-symbols")
-    print(len(riwords.webpage))
-    print(riwords.webpage)
+    print(len(riwords.dict))
+    print(riwords.dict)
     print(len(riwords.next_url_list))
     print(riwords.next_url_list)
