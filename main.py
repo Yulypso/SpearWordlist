@@ -49,7 +49,10 @@ class Riwords:
                                                                                                                                             re.sub("style=\"(.)+\"", "", w))))))))))))))))))))))
 
         if "http" not in w:
-            return w
+            return re.sub("[?!\"#`,;:]", "",
+                        re.sub("(.)*[.\'!@0-9_]$", "",
+                            re.sub("^[.\'!@0-9_](.)*", "",
+                                re.sub("(.)*[-=]+(.)*", "", w))))
         else:
             self.url_list.append(w)
             return ""
@@ -88,8 +91,8 @@ class Riwords:
     def read(self):
         req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
         try:
-            with urllib.request.urlopen(req, timeout=5) as url:
-                return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in url for w in l.split())
+            with urllib.request.urlopen(req, timeout=5) as u:
+                return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in u for w in l.split())
         except:
             if self.verbose:
                 print("Error: timout")
@@ -102,6 +105,7 @@ class Riwords:
                     # 12: longueur du mot maximum qui ont une frequence > 0.01 en langue francaise
                     f.write(w[0].strip())
                     f.write("\n")
+            print("\nWriting on " + self.output + " file ...")
 
     def parse_internal_url(self, deep=1, horizontal=None, already_read_url=None, output_dict=None):
 
