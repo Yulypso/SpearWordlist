@@ -11,7 +11,7 @@
 ## Setup
 
 ```bash
-$ git clone https://github.com/Yulypso/RiMaze.git
+$ git clone https://github.com/Yulypso/RiWords.git
 $ cd Rimaze
 ```
 
