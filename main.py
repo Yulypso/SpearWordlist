@@ -88,7 +88,7 @@ class Riwords:
     def read(self):
         req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
         try:
-            with urllib.request.urlopen(req, timeout=4) as url:
+            with urllib.request.urlopen(req, timeout=5) as url:
                 return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in url for w in l.split())
         except:
             if self.verbose:
@@ -124,14 +124,13 @@ class Riwords:
                 if self.verbose:
                     print("already seen: " + repr(len(already_read_url)))
                 try:
-
                     if self.verbose:
                         print(f"Searching [{deep}][{i}]: " + self.next_url_list[i])
                     else:
-                        print(f"[+{repr(len(already_read_url))}]: " + self.next_url_list[i])
+                        print("[+]: " + self.next_url_list[i])
 
                     r = Riwords(url=self.next_url_list[i], output=self.output, verbose=self.verbose)
-                    r.parse_internal_url(len(r.next_url_list), deep-1, already_read_url=self.already_read_url, output_dict=self.output_dict)
+                    r.parse_internal_url(deep-1, already_read_url=already_read_url, output_dict=output_dict)
 
                     if self.verbose:
                         print(f"Add words to dict [{deep}][{i}]: " + ", ".join(r.dict_counter))
