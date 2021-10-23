@@ -108,7 +108,6 @@ class Riwords:
             print("\nWriting on " + self.output + " file ...")
 
     def parse_internal_url(self, deep=1, horizontal=None, already_read_url=None, output_dict=None):
-
         if horizontal is None:
             horizontal = len(self.next_url_list)
         if already_read_url is None:
@@ -190,12 +189,14 @@ if __name__ == '__main__':
     verbose = args.verbose
 
     print("----- [Riwords] -----\n")
-
-
     print("Source URL: " + url)
     print("Output file: " + output)
-    print("Deep: " + repr(deep) + "\n")
 
     riwords = Riwords(url=url, output=output, verbose=verbose) # https://fr.wikipedia.org/wiki/Commissariat_%C3%A0_l%27%C3%A9nergie_atomique_et_aux_%C3%A9nergies_alternatives
-    riwords.parse_internal_url(deep=deep)  # horizontal=default | deep=2
+    if deep is None:
+        print("Deep: 1 (default) \n")
+        riwords.parse_internal_url()
+    else:
+        print("Deep: " + repr(deep) + "\n")
+        riwords.parse_internal_url(deep=deep)
     riwords.write()
