@@ -12,7 +12,7 @@
 
 ```bash
 $ git clone https://github.com/Yulypso/RiWords.git
-$ cd Rimaze
+$ cd RiWords
 ```
 
 ---
