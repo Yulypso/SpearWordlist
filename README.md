@@ -19,7 +19,7 @@ $ cd Rimaze
 
 <br/>
 
-## Start RiMaze
+## Start RiWords
 
 ```bash
 $ python3 main.py [--help] --url <url> --output <output file name> [--deep <value>] [--verbose]
