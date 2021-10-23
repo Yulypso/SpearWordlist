@@ -158,7 +158,7 @@ class Riwords:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='--Brute force Dictionary generator--')
+    parser = argparse.ArgumentParser(description='--RiWords Brute force Dictionary generator--')
     parser.add_argument('--url',
                         '-u',
                         help='Source URL',
@@ -179,8 +179,8 @@ if __name__ == '__main__':
                         )
     parser.add_argument('--verbose',
                         '-v',
-                        help='Verbose',
-                        action = 'store_true',
+                        help='get more information',
+                        action='store_true',
                         required=False
                         )
     args = parser.parse_args()
