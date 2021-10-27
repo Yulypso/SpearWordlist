@@ -26,33 +26,33 @@ class Riwords:
 
     def ignore_html(self, w):
         w = re.sub("^(https:/)$", "",
-                re.sub("/$", "",
-                   re.sub("«\xa0", "",
-                          re.sub("^([0-9]+).([0-9]+)(%)?", "",
-                                 re.sub(",", "",
-                                        re.sub("(.)*?[;]", "",
-                                               re.sub("'\u202f'", "",
-                                                      re.sub("(.)*[\\\]+(.)*", "",
-                                                             re.sub("(.)*[}]+(.)*", "",
-                                                                    re.sub("(.)+(svg|png|jpg|jpeg|gif|pdf)", "",
-                                                                           re.sub("[.-]*$", "",
-                                                                                  re.sub("[a-zA-Z]+-[0-9]+", "",
-                                                                                         re.sub("((.)+=\")?[\"]?", "",
-                                                                                                re.sub("(.)*[&#]+(.)*", "",
-                                                                                                       re.sub("(//)", "https://",
-                                                                                                              re.sub("^(?!href=\"//)(href=\"([/#]).*)", "",
-                                                                                                                  re.sub("(\"«&#160;)", "",
-                                                                                                                      re.sub("(((>)?<.*)?(>)?(/>)?(\[)?(])?(\()?(\))?)(\|)?((.)*:)?(·)?({)?(\\)(})?)?", "",
-                                                                                                                          re.sub("^(?!href=\")((.)*\")", "",
-                                                                                                                              re.sub("(<!?-?-?.+-?-?>)", "",
-                                                                                                                                     re.sub("class=\"(.)+\"", "",
-                                                                                                                                            re.sub("style=\"(.)+\"", "", w))))))))))))))))))))))
+                   re.sub("/$", "",
+                          re.sub("«\xa0", "",
+                                 re.sub("^([0-9]+).([0-9]+)(%)?", "",
+                                        re.sub(",", "",
+                                               re.sub("(.)*?[;]", "",
+                                                      re.sub("'\u202f'", "",
+                                                             re.sub("(.)*[\\\]+(.)*", "",
+                                                                    re.sub("(.)*[}]+(.)*", "",
+                                                                           re.sub("(.)+(svg|png|jpg|jpeg|gif|pdf)", "",
+                                                                                  re.sub("[.-]*$", "",
+                                                                                         re.sub("[a-zA-Z]+-[0-9]+", "",
+                                                                                                re.sub("((.)+=\")?[\"]?", "",
+                                                                                                       re.sub("(.)*[&#]+(.)*", "",
+                                                                                                              re.sub("(//)", "https://",
+                                                                                                                     re.sub("^(?!href=\"//)(href=\"([/#]).*)", "",
+                                                                                                                            re.sub("(\"«&#160;)", "",
+                                                                                                                                   re.sub("(((>)?<.*)?(>)?(/>)?(\[)?(])?(\()?(\))?)(\|)?((.)*:)?(·)?({)?(\\)(})?)?", "",
+                                                                                                                                          re.sub("^(?!href=\")((.)*\")", "",
+                                                                                                                                                 re.sub("(<!?-?-?.+-?-?>)", "",
+                                                                                                                                                        re.sub("class=\"(.)+\"", "",
+                                                                                                                                                               re.sub("style=\"(.)+\"", "", w))))))))))))))))))))))
 
         if "http" not in w:
             return re.sub("[?!\"#`,;:]", "",
-                        re.sub("(.)*[.\'!@0-9_]$", "",
-                            re.sub("^[.\'!@0-9_](.)*", "",
-                                re.sub("(.)*[-=]+(.)*", "", w))))
+                          re.sub("(.)*[.\'!@0-9_]$", "",
+                                 re.sub("^[.\'!@0-9_](.)*", "",
+                                        re.sub("(.)*[-=]+(.)*", "", w))))
         else:
             self.url_list.append(w)
             return ""
@@ -63,7 +63,7 @@ class Riwords:
     def filter_url_list(self):
         for url in self.url_list:
             splitted_url = re.split("[.-/_]", repr(url))
-            for j, v in enumerate(splitted_url): # remove '
+            for j, v in enumerate(splitted_url):  # remove '
                 splitted_url[j] = re.sub("'", "", v)
 
             for mcw in self.get_most_common_words():
@@ -77,19 +77,27 @@ class Riwords:
                 if iw in nurl:
                     self.next_url_list.remove(nurl)
 
-        for i, nurl in enumerate(self.next_url_list): # search last occurence of token
+        # search last occurence of token
+        for i, nurl in enumerate(self.next_url_list):
             splitted_url = re.split("/", repr(nurl))
             token = re.sub("'", "", splitted_url[len(splitted_url)-1])
 
-            for j, v in enumerate(splitted_url): # remove '
+            for j, v in enumerate(splitted_url):  # remove '
                 splitted_url[j] = re.sub("'", "", v)
 
-                if Counter(splitted_url)[token] > 1: # if at least 2 occurnces
-                    nurl2 = re.sub("(\\b" + token + "\\b)(?!.*\\1)$", "", nurl)  # delete the last occurence if its position is at the end
-                    self.next_url_list[i] = re.sub("/$", "", nurl2)  # update next url list
+                if Counter(splitted_url)[token] > 1:  # if at least 2 occurnces
+                    # delete the last occurence if its position is at the end
+                    nurl2 = re.sub("(\\b" + token + "\\b)(?!.*\\1)$", "", nurl)
+                    self.next_url_list[i] = re.sub(
+                        "/$", "", nurl2)  # update next url list
 
     def read(self):
-        req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
+        unquote_url = urllib.parse.unquote(self.url)
+        print(unquote_url)
+        quote_url = urllib.parse.quote(unquote_url).replace("%3A", ":")
+        print(quote_url)
+        req = urllib.request.Request(quote_url, headers={
+                                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
         try:
             with urllib.request.urlopen(req, timeout=5) as u:
                 return Counter(self.ignore_html(urllib.parse.unquote_plus(w.decode("utf-8"))) for l in u for w in l.split())
@@ -116,8 +124,10 @@ class Riwords:
             output_dict = self.output_dict
 
         if self.verbose:
-            print(f"\n--- Looking at Deep value = [{deep}] for [{horizontal} internal url] ---")
-            print(f"Search list ({len(self.next_url_list)} url): [" + ", ".join(self.next_url_list) + "]\n")
+            print(
+                f"\n--- Looking at Deep value = [{deep}] for [{horizontal} internal url] ---")
+            print(
+                f"Search list ({len(self.next_url_list)} url): [" + ", ".join(self.next_url_list) + "]\n")
         cpt = horizontal
         i = 0
 
@@ -128,20 +138,25 @@ class Riwords:
                     print("already seen: " + repr(len(already_read_url)))
                 try:
                     if self.verbose:
-                        print(f"Searching [{deep}][{i}]: " + self.next_url_list[i])
+                        print(f"Searching [{deep}][{i}]: " +
+                              self.next_url_list[i])
                     else:
                         print("[+]: " + self.next_url_list[i])
 
-                    r = Riwords(url=self.next_url_list[i], output=self.output, verbose=self.verbose)
-                    r.parse_internal_url(deep-1, already_read_url=already_read_url, output_dict=output_dict)
+                    r = Riwords(
+                        url=self.next_url_list[i], output=self.output, verbose=self.verbose)
+                    r.parse_internal_url(
+                        deep-1, already_read_url=already_read_url, output_dict=output_dict)
 
                     if self.verbose:
-                        print(f"Add words to dict [{deep}][{i}]: " + ", ".join(r.dict_counter))
+                        print(
+                            f"Add words to dict [{deep}][{i}]: " + ", ".join(r.dict_counter))
 
                     output_dict += r.dict_counter
 
                     if self.verbose:
-                        print(f"interesting url found [{deep}][{i}]: [" + ", ".join(r.next_url_list) + "]\n")
+                        print(
+                            f"interesting url found [{deep}][{i}]: [" + ", ".join(r.next_url_list) + "]\n")
 
                     i += 1
 
@@ -157,7 +172,8 @@ class Riwords:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='--RiWords Brute force Dictionary generator--')
+    parser = argparse.ArgumentParser(
+        description='--RiWords Brute force Dictionary generator--')
     parser.add_argument('--url',
                         '-u',
                         help='Source URL',
@@ -192,7 +208,8 @@ if __name__ == '__main__':
     print("Source URL: " + url)
     print("Output file: " + output)
 
-    riwords = Riwords(url=url, output=output, verbose=verbose) # https://fr.wikipedia.org/wiki/Commissariat_%C3%A0_l%27%C3%A9nergie_atomique_et_aux_%C3%A9nergies_alternatives
+    # https://fr.wikipedia.org/wiki/Commissariat_%C3%A0_l%27%C3%A9nergie_atomique_et_aux_%C3%A9nergies_alternatives
+    riwords = Riwords(url=url, output=output, verbose=verbose)
     if deep is None:
         print("Deep: 1 (default) \n")
         riwords.parse_internal_url()
