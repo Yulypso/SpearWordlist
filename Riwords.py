@@ -49,10 +49,10 @@ class Riwords:
                                                                                                                                                                re.sub("style=\"(.)+\"", "", w))))))))))))))))))))))
 
         if "http" not in w:
-            return re.sub("[?!\"#`,;:]", "",
+            return re.sub("[?!\"#`,;:./]", "",
                           re.sub("(.)*[.\'!@0-9_]$", "",
                                  re.sub("^[.\'!@0-9_](.)*", "",
-                                        re.sub("(.)*[-=]+(.)*", "", w))))
+                                        re.sub("(.)*[-=]+(.)*", "", w)))).lower()
         else:
             self.url_list.append(w)
             return ""
