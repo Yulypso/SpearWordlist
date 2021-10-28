@@ -93,9 +93,7 @@ class Riwords:
 
     def read(self):
         unquote_url = urllib.parse.unquote(self.url)
-        print(unquote_url)
         quote_url = urllib.parse.quote(unquote_url).replace("%3A", ":")
-        print(quote_url)
         req = urllib.request.Request(quote_url, headers={
                                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'})
         try:
