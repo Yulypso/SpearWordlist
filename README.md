@@ -1,4 +1,4 @@
-# RiWords
+# SpearWordlist
 
 Website parser in order to get a wordlist.
 
